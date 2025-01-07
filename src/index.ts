@@ -95,7 +95,6 @@ class InitxMatcher<TResult, TMatcher extends object> {
 
     return (
       this.isObject(matchers)
-      && keys.length >= 1
       && requiredKeys.every(key => keys.includes(key))
     )
   }
