@@ -5,7 +5,7 @@ function resultFn(matcher: any, ...others: string[]) {
   return { matcher, others }
 }
 
-describe('initxMatcher', () => {
+describe('initxBaseMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
   it('should match with BaseMatchers', () => {
