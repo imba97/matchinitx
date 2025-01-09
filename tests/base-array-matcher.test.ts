@@ -1,20 +1,47 @@
 import { describe, expect, it } from 'vitest'
-import { useInitxMatcher } from '../src/index'
+import { type Matchers, useInitxMatcher } from '../src/index'
 
-function resultFn(matcher: any, ...others: string[]) {
+interface CustomMatcher {
+  name: string
+}
+
+function resultFn(matcher: CustomMatcher, ...others: string[]) {
   return { matcher, others }
 }
 
 describe('initxBaseArrayMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  it('should match with an array of BaseMatchers', () => {
-    const matchers = [
-      { matching: 'testKey1' },
-      { matching: 'testKey2' }
-    ]
+  const matchers: Matchers<CustomMatcher> = [
+    {
+      matching: [
+        'foo',
+        /^bar/
+      ],
+      name: 'first'
+    },
+    {
+      matching: [
+        'test',
+        /^t/
+      ],
+      name: 'second'
+    }
+  ]
 
-    const result = matcher.match(matchers, 'testKey2', 'extra1')
-    expect(result).toEqual([{ matcher: {}, others: ['extra1'] }])
+  it('should match name first', () => {
+    const [firstResultFoo] = matcher.match(matchers, 'foo')
+    expect(firstResultFoo.matcher.name).toEqual('first')
+
+    const [firstResultBarfoo] = matcher.match(matchers, 'barfoo')
+    expect(firstResultBarfoo.matcher.name).toEqual('first')
+  })
+
+  it('should match name second', () => {
+    const [secondResultTest] = matcher.match(matchers, 'test')
+    expect(secondResultTest.matcher.name).toEqual('second')
+
+    const [secondResultT] = matcher.match(matchers, 't')
+    expect(secondResultT.matcher.name).toEqual('second')
   })
 })
