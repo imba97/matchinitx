@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { useInitxMatcher } from '../src/index'
+import { type Matchers, useInitxMatcher } from '../src/index'
 
 function resultFn(matcher: any, ...others: string[]) {
   return { matcher, others }
@@ -8,13 +8,58 @@ function resultFn(matcher: any, ...others: string[]) {
 describe('initxBaseMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  it('should match with BaseMatchers', () => {
-    const matchers = {
-      matching: 'testKey'
-    }
+  type CustomMatchers = Matchers<{
+    name: string
+  }>
 
-    const result = matcher.match(matchers, 'testKey', 'extra1')
-    expect(result).toEqual([{ matcher: {}, others: ['extra1'] }])
+  const matcher1: CustomMatchers = {
+    matching: 'foo',
+    name: 'fooName'
+  }
+
+  const matcher2: CustomMatchers = {
+    matching: /^foo/,
+    name: 'barName'
+  }
+
+  it('should match matcher1 and matcher2', () => {
+    const matchers = [matcher1, matcher2]
+
+    const fooResult = matcher.match(matchers, 'foo', 'extra')
+
+    expect(fooResult).toEqual(
+      [
+        {
+          matcher: {
+            name: 'fooName'
+          },
+          others: ['extra']
+        },
+        {
+          matcher: {
+            name: 'barName'
+          },
+          others: ['extra']
+        }
+      ]
+    )
+  })
+
+  it('should match the matcher2', () => {
+    const matchers = [matcher1, matcher2]
+
+    const result = matcher.match(matchers, 'foobar', 'extra')
+
+    expect(result).toEqual(
+      [
+        {
+          matcher: {
+            name: 'barName'
+          },
+          others: ['extra']
+        }
+      ]
+    )
   })
 
   it('should not match if the key does not match any patterns', () => {
