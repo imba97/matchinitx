@@ -15,7 +15,6 @@ describe('initxTypeMatcher', () => {
     }
 
     const result = matcher.match(matchers, 'testKey2', 'extra2')
-    console.log('result', result)
     expect(result).toEqual([{ matcher: {}, others: ['type2', 'extra2'] }])
   })
 })

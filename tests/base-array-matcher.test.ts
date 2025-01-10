@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { type MatcherRules, useInitxMatcher } from '../src/index'
 
-interface CustomMatcher {
+interface CustomField {
   name: string
 }
 
-function resultFn(matcher: CustomMatcher, ...others: string[]) {
+function resultFn(matcher: CustomField, ...others: string[]) {
   return { matcher, others }
 }
 
 describe('initxBaseArrayMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  const matchers: MatcherRules<CustomMatcher> = [
+  const matchers: MatcherRules<CustomField> = [
     {
       matching: [
         'foo',

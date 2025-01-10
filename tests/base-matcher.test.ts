@@ -8,16 +8,16 @@ function resultFn(matcher: any, ...others: string[]) {
 describe('initxBaseMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  type CustomMatchers = MatcherRules<{
+  type CustomMatcherRules = MatcherRules<{
     name: string
   }>
 
-  const matcher1: CustomMatchers = {
+  const matcher1: CustomMatcherRules = {
     matching: 'foo',
     name: 'fooName'
   }
 
-  const matcher2: CustomMatchers = {
+  const matcher2: CustomMatcherRules = {
     matching: /^foo/,
     name: 'barName'
   }
