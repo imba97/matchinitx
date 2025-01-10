@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { type MatcherRules, useInitxMatcher } from '../src/index'
 
-function resultFn(matcher: any, ...others: string[]) {
-  return { matcher, others }
+function resultFn(rule: any, ...others: string[]) {
+  return { rule, others }
 }
 
 describe('initxBaseMatcher', () => {
@@ -30,13 +30,13 @@ describe('initxBaseMatcher', () => {
     expect(fooResult).toEqual(
       [
         {
-          matcher: {
+          rule: {
             name: 'fooName'
           },
           others: ['extra']
         },
         {
-          matcher: {
+          rule: {
             name: 'barName'
           },
           others: ['extra']
@@ -53,7 +53,7 @@ describe('initxBaseMatcher', () => {
     expect(result).toEqual(
       [
         {
-          matcher: {
+          rule: {
             name: 'barName'
           },
           others: ['extra']
@@ -74,6 +74,6 @@ describe('initxBaseMatcher', () => {
   it('should correctly handle multiple arguments', () => {
     const rule = { matching: 'testKey' }
     const result = matcher.match(rule, 'testKey', 'extra1', 'extra2')
-    expect(result).toEqual([{ matcher: {}, others: ['extra1', 'extra2'] }])
+    expect(result).toEqual([{ rule: {}, others: ['extra1', 'extra2'] }])
   })
 })

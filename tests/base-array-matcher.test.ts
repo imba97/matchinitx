@@ -5,8 +5,8 @@ interface CustomField {
   name: string
 }
 
-function resultFn(matcher: CustomField, ...others: string[]) {
-  return { matcher, others }
+function resultFn(rule: CustomField, ...others: string[]) {
+  return { rule, others }
 }
 
 describe('initxBaseArrayMatcher', () => {
@@ -31,17 +31,17 @@ describe('initxBaseArrayMatcher', () => {
 
   it('should match name first', () => {
     const [firstResultFoo] = matcher.match(rules, 'foo')
-    expect(firstResultFoo.matcher.name).toEqual('first')
+    expect(firstResultFoo.rule.name).toEqual('first')
 
     const [firstResultBarfoo] = matcher.match(rules, 'barfoo')
-    expect(firstResultBarfoo.matcher.name).toEqual('first')
+    expect(firstResultBarfoo.rule.name).toEqual('first')
   })
 
   it('should match name second', () => {
     const [secondResultTest] = matcher.match(rules, 'test')
-    expect(secondResultTest.matcher.name).toEqual('second')
+    expect(secondResultTest.rule.name).toEqual('second')
 
     const [secondResultT] = matcher.match(rules, 't')
-    expect(secondResultT.matcher.name).toEqual('second')
+    expect(secondResultT.rule.name).toEqual('second')
   })
 })

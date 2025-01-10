@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { useInitxMatcher } from '../src/index'
+import { type MatcherRules, useInitxMatcher } from '../src/index'
 
-function resultFn(matcher: any, ...others: string[]) {
-  return { matcher, others }
+function resultFn(rule: MatcherRules, ...others: string[]) {
+  return { rule, others }
 }
 
 describe('initxTypeMatcher', () => {
@@ -15,6 +15,6 @@ describe('initxTypeMatcher', () => {
     }
 
     const result = matcher.match(rules, 'testKey2', 'extra2')
-    expect(result).toEqual([{ matcher: {}, others: ['type2', 'extra2'] }])
+    expect(result).toEqual([{ rule: {}, others: ['type2', 'extra2'] }])
   })
 })

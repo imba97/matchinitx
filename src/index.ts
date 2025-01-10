@@ -9,98 +9,98 @@ interface MatcherRuleSetup {
   matching: MaybeArray<string | RegExp>
 }
 
-type BaseMatcherRules<TMatcher> = TMatcher & MatcherRuleSetup
-type TypeMatcherRules<TMatcher> = Record<string, BaseMatcherRules<TMatcher>>
+type BaseMatcherRules<TRule> = TRule & MatcherRuleSetup
+type TypeMatcherRules<TRule> = Record<string, BaseMatcherRules<TRule>>
 
-type ResultFunction<TResult, TMatcher> = (matcher: TMatcher, ...others: string[]) => TResult
+type ResultFunction<TResult, TRule> = (matcher: TRule, ...others: string[]) => TResult
 
-export type MatcherRules<TMatcher extends object = object> = MaybeArray<BaseMatcherRules<TMatcher>> | TypeMatcherRules<TMatcher>
+export type MatcherRules<TRule extends object = object> = MaybeArray<BaseMatcherRules<TRule>> | TypeMatcherRules<TRule>
 
-class InitxMatcher<TResult, TMatcher extends object> {
-  private resultFunction: ResultFunction<TResult, TMatcher>
+class InitxMatcher<TResult, TRule extends object> {
+  private resultFunction: ResultFunction<TResult, TRule>
 
-  constructor(fn: ResultFunction<TResult, TMatcher>) {
+  constructor(fn: ResultFunction<TResult, TRule>) {
     this.resultFunction = fn
   }
 
-  public match(matchers: MatcherRules<TMatcher>, key: string, ...others: string[]): TResult[] {
-    // BaseMatchers
-    if (this.isBaseMatchers(matchers)) {
-      return this.matchBaseMatchers(matchers, key, ...others)
+  public match(rules: MatcherRules<TRule>, key: string, ...others: string[]): TResult[] {
+    // BaseRules
+    if (this.isBaseRules(rules)) {
+      return this.matchBaseRules(rules, key, ...others)
     }
 
-    // Array<BaseMatchers>
-    if (this.isArrayBaseMatchers(matchers)) {
-      return this.matchArrayBaseMatchers(matchers, key, ...others)
+    // Array<BaseRules>
+    if (this.isArrayBaseRules(rules)) {
+      return this.matchArrayBaseRules(rules, key, ...others)
     }
 
-    // TypeMatchers
-    if (this.isObject(matchers)) {
-      return this.matchTypeMatchers(matchers as TypeMatcherRules<TMatcher>, key, ...others)
+    // TypeRules
+    if (this.isObject(rules)) {
+      return this.matchTypeRules(rules as TypeMatcherRules<TRule>, key, ...others)
     }
 
     return []
   }
 
-  // BaseMatchers
-  private matchBaseMatchers(matchers: BaseMatcherRules<TMatcher>, key: string, ...others: string[]) {
-    if (!this.isPassed(matchers.matching, key)) {
+  // BaseRules
+  private matchBaseRules(rules: BaseMatcherRules<TRule>, key: string, ...others: string[]) {
+    if (!this.isPassed(rules.matching, key)) {
       return []
     }
 
     return this.alwaysArray(
-      this.buildResultFunction(matchers, ...others)
+      this.buildResultFunction(rules, ...others)
     )
   }
 
-  private matchArrayBaseMatchers(matchers: BaseMatcherRules<TMatcher>[], key: string, ...others: string[]) {
-    const handlers: TResult[] = []
+  private matchArrayBaseRules(rules: BaseMatcherRules<TRule>[], key: string, ...others: string[]) {
+    const results: TResult[] = []
 
-    for (let i = 0; i < matchers.length; i++) {
-      const matcher = matchers[i]
-      const isPassed = this.isPassed(matcher.matching, key)
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i]
+      const isPassed = this.isPassed(rule.matching, key)
 
       if (isPassed) {
-        handlers.push(
-          this.buildResultFunction(matcher, ...others)
+        results.push(
+          this.buildResultFunction(rule, ...others)
         )
       }
     }
 
-    return handlers
+    return results
   }
 
-  private matchTypeMatchers(matchers: TypeMatcherRules<TMatcher>, key: string, ...others: string[]) {
-    const handlers: TResult[] = []
-    const keys = Object.keys(matchers)
+  private matchTypeRules(rules: TypeMatcherRules<TRule>, key: string, ...others: string[]) {
+    const results: TResult[] = []
+    const keys = Object.keys(rules)
 
     for (let i = 0; i < keys.length; i++) {
-      const matcher = matchers[keys[i]]
-      const isPassed = this.isPassed(matcher.matching, key)
+      const rule = rules[keys[i]]
+      const isPassed = this.isPassed(rule.matching, key)
 
       if (isPassed) {
-        handlers.push(
-          this.buildResultFunction(matcher, keys[i], ...others)
+        results.push(
+          this.buildResultFunction(rule, keys[i], ...others)
         )
       }
     }
 
-    return handlers
+    return results
   }
 
-  private isBaseMatchers(matchers: MatcherRules<TMatcher>): matchers is BaseMatcherRules<TMatcher> {
-    const keys = Object.keys(matchers)
+  private isBaseRules(rules: MatcherRules<TRule>): rules is BaseMatcherRules<TRule> {
+    const keys = Object.keys(rules)
 
     const requiredKeys: [keyof MatcherRuleSetup] = ['matching']
 
     return (
-      this.isObject(matchers)
+      this.isObject(rules)
       && requiredKeys.every(key => keys.includes(key))
     )
   }
 
-  private isArrayBaseMatchers(matchers: MatcherRules<TMatcher>): matchers is BaseMatcherRules<TMatcher>[] {
-    return Array.isArray(matchers) && matchers.every(this.isBaseMatchers.bind(this))
+  private isArrayBaseRules(rules: MatcherRules<TRule>): rules is BaseMatcherRules<TRule>[] {
+    return Array.isArray(rules) && rules.every(this.isBaseRules.bind(this))
   }
 
   private alwaysArray<T>(value: T | T[]): T[] {
@@ -111,8 +111,8 @@ class InitxMatcher<TResult, TMatcher extends object> {
     return typeof value === 'object' && value !== null && !(Array.isArray(value))
   }
 
-  private isPassed(matchers: MatcherRuleSetup['matching'], key: string): boolean {
-    const tests = Array.isArray(matchers) ? matchers : [matchers]
+  private isPassed(rules: MatcherRuleSetup['matching'], key: string): boolean {
+    const tests = Array.isArray(rules) ? rules : [rules]
 
     return tests.some((test) => {
       if (typeof test === 'string') {
@@ -135,12 +135,12 @@ class InitxMatcher<TResult, TMatcher extends object> {
     return result as T
   }
 
-  private buildResultMatcher(matcher: BaseMatcherRules<TMatcher>) {
-    return this.omit<TMatcher>(matcher, ['matching'])
+  private buildResultMatcher(rules: BaseMatcherRules<TRule>) {
+    return this.omit<TRule>(rules, ['matching'])
   }
 
-  private buildResultFunction(matcher: BaseMatcherRules<TMatcher>, ...others: string[]): TResult {
-    const buildedMatcher = this.buildResultMatcher(matcher)
+  private buildResultFunction(rules: BaseMatcherRules<TRule>, ...others: string[]): TResult {
+    const buildedMatcher = this.buildResultMatcher(rules)
     return this.resultFunction(
       buildedMatcher,
       ...others
@@ -150,7 +150,7 @@ class InitxMatcher<TResult, TMatcher extends object> {
 
 export function useInitxMatcher<
   TResult,
-  TMatcher extends object = object
->(fn: ResultFunction<TResult, TMatcher>) {
-  return new InitxMatcher<TResult, TMatcher>(fn)
+  TRule extends object = object
+>(fn: ResultFunction<TResult, TRule>) {
+  return new InitxMatcher<TResult, TRule>(fn)
 }
