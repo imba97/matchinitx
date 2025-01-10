@@ -1,6 +1,6 @@
 type MaybeArray<T> = T | T[]
 
-interface MatcherSetup {
+interface MatcherRuleSetup {
   /**
    * Matching string or RegExp
    *
@@ -9,12 +9,12 @@ interface MatcherSetup {
   matching: MaybeArray<string | RegExp>
 }
 
-type BaseMatchers<TMatcher> = TMatcher & MatcherSetup
-type TypeMatchers<TMatcher> = Record<string, BaseMatchers<TMatcher>>
+type BaseMatcherRules<TMatcher> = TMatcher & MatcherRuleSetup
+type TypeMatcherRules<TMatcher> = Record<string, BaseMatcherRules<TMatcher>>
 
 type ResultFunction<TResult, TMatcher> = (matcher: TMatcher, ...others: string[]) => TResult
 
-export type Matchers<TMatcher extends object = object> = MaybeArray<BaseMatchers<TMatcher>> | TypeMatchers<TMatcher>
+export type MatcherRules<TMatcher extends object = object> = MaybeArray<BaseMatcherRules<TMatcher>> | TypeMatcherRules<TMatcher>
 
 class InitxMatcher<TResult, TMatcher extends object> {
   private resultFunction: ResultFunction<TResult, TMatcher>
@@ -23,7 +23,7 @@ class InitxMatcher<TResult, TMatcher extends object> {
     this.resultFunction = fn
   }
 
-  public match(matchers: Matchers<TMatcher>, key: string, ...others: string[]): TResult[] {
+  public match(matchers: MatcherRules<TMatcher>, key: string, ...others: string[]): TResult[] {
     // BaseMatchers
     if (this.isBaseMatchers(matchers)) {
       return this.matchBaseMatchers(matchers, key, ...others)
@@ -36,14 +36,14 @@ class InitxMatcher<TResult, TMatcher extends object> {
 
     // TypeMatchers
     if (this.isObject(matchers)) {
-      return this.matchTypeMatchers(matchers as TypeMatchers<TMatcher>, key, ...others)
+      return this.matchTypeMatchers(matchers as TypeMatcherRules<TMatcher>, key, ...others)
     }
 
     return []
   }
 
   // BaseMatchers
-  private matchBaseMatchers(matchers: BaseMatchers<TMatcher>, key: string, ...others: string[]) {
+  private matchBaseMatchers(matchers: BaseMatcherRules<TMatcher>, key: string, ...others: string[]) {
     if (!this.isPassed(matchers.matching, key)) {
       return []
     }
@@ -53,7 +53,7 @@ class InitxMatcher<TResult, TMatcher extends object> {
     )
   }
 
-  private matchArrayBaseMatchers(matchers: BaseMatchers<TMatcher>[], key: string, ...others: string[]) {
+  private matchArrayBaseMatchers(matchers: BaseMatcherRules<TMatcher>[], key: string, ...others: string[]) {
     const handlers: TResult[] = []
 
     for (let i = 0; i < matchers.length; i++) {
@@ -70,7 +70,7 @@ class InitxMatcher<TResult, TMatcher extends object> {
     return handlers
   }
 
-  private matchTypeMatchers(matchers: TypeMatchers<TMatcher>, key: string, ...others: string[]) {
+  private matchTypeMatchers(matchers: TypeMatcherRules<TMatcher>, key: string, ...others: string[]) {
     const handlers: TResult[] = []
     const keys = Object.keys(matchers)
 
@@ -88,10 +88,10 @@ class InitxMatcher<TResult, TMatcher extends object> {
     return handlers
   }
 
-  private isBaseMatchers(matchers: Matchers<TMatcher>): matchers is BaseMatchers<TMatcher> {
+  private isBaseMatchers(matchers: MatcherRules<TMatcher>): matchers is BaseMatcherRules<TMatcher> {
     const keys = Object.keys(matchers)
 
-    const requiredKeys: [keyof MatcherSetup] = ['matching']
+    const requiredKeys: [keyof MatcherRuleSetup] = ['matching']
 
     return (
       this.isObject(matchers)
@@ -99,7 +99,7 @@ class InitxMatcher<TResult, TMatcher extends object> {
     )
   }
 
-  private isArrayBaseMatchers(matchers: Matchers<TMatcher>): matchers is BaseMatchers<TMatcher>[] {
+  private isArrayBaseMatchers(matchers: MatcherRules<TMatcher>): matchers is BaseMatcherRules<TMatcher>[] {
     return Array.isArray(matchers) && matchers.every(this.isBaseMatchers.bind(this))
   }
 
@@ -111,7 +111,7 @@ class InitxMatcher<TResult, TMatcher extends object> {
     return typeof value === 'object' && value !== null && !(Array.isArray(value))
   }
 
-  private isPassed(matchers: MatcherSetup['matching'], key: string): boolean {
+  private isPassed(matchers: MatcherRuleSetup['matching'], key: string): boolean {
     const tests = Array.isArray(matchers) ? matchers : [matchers]
 
     return tests.some((test) => {
@@ -135,11 +135,11 @@ class InitxMatcher<TResult, TMatcher extends object> {
     return result as T
   }
 
-  private buildResultMatcher(matcher: BaseMatchers<TMatcher>) {
+  private buildResultMatcher(matcher: BaseMatcherRules<TMatcher>) {
     return this.omit<TMatcher>(matcher, ['matching'])
   }
 
-  private buildResultFunction(matcher: BaseMatchers<TMatcher>, ...others: string[]): TResult {
+  private buildResultFunction(matcher: BaseMatcherRules<TMatcher>, ...others: string[]): TResult {
     const buildedMatcher = this.buildResultMatcher(matcher)
     return this.resultFunction(
       buildedMatcher,

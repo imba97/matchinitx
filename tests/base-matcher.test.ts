@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type Matchers, useInitxMatcher } from '../src/index'
+import { type MatcherRules, useInitxMatcher } from '../src/index'
 
 function resultFn(matcher: any, ...others: string[]) {
   return { matcher, others }
@@ -8,7 +8,7 @@ function resultFn(matcher: any, ...others: string[]) {
 describe('initxBaseMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  type CustomMatchers = Matchers<{
+  type CustomMatchers = MatcherRules<{
     name: string
   }>
 
