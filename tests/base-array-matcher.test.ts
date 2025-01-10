@@ -12,7 +12,7 @@ function resultFn(matcher: CustomField, ...others: string[]) {
 describe('initxBaseArrayMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  const matchers: MatcherRules<CustomField> = [
+  const rules: MatcherRules<CustomField> = [
     {
       matching: [
         'foo',
@@ -30,18 +30,18 @@ describe('initxBaseArrayMatcher', () => {
   ]
 
   it('should match name first', () => {
-    const [firstResultFoo] = matcher.match(matchers, 'foo')
+    const [firstResultFoo] = matcher.match(rules, 'foo')
     expect(firstResultFoo.matcher.name).toEqual('first')
 
-    const [firstResultBarfoo] = matcher.match(matchers, 'barfoo')
+    const [firstResultBarfoo] = matcher.match(rules, 'barfoo')
     expect(firstResultBarfoo.matcher.name).toEqual('first')
   })
 
   it('should match name second', () => {
-    const [secondResultTest] = matcher.match(matchers, 'test')
+    const [secondResultTest] = matcher.match(rules, 'test')
     expect(secondResultTest.matcher.name).toEqual('second')
 
-    const [secondResultT] = matcher.match(matchers, 't')
+    const [secondResultT] = matcher.match(rules, 't')
     expect(secondResultT.matcher.name).toEqual('second')
   })
 })

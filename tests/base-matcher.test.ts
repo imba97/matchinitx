@@ -8,24 +8,24 @@ function resultFn(matcher: any, ...others: string[]) {
 describe('initxBaseMatcher', () => {
   const matcher = useInitxMatcher(resultFn)
 
-  type CustomMatcherRules = MatcherRules<{
+  type CustomMatcherRule = MatcherRules<{
     name: string
   }>
 
-  const matcher1: CustomMatcherRules = {
+  const rule1: CustomMatcherRule = {
     matching: 'foo',
     name: 'fooName'
   }
 
-  const matcher2: CustomMatcherRules = {
+  const rule2: CustomMatcherRule = {
     matching: /^foo/,
     name: 'barName'
   }
 
   it('should match matcher1 and matcher2', () => {
-    const matchers = [matcher1, matcher2]
+    const rules: CustomMatcherRule[] = [rule1, rule2]
 
-    const fooResult = matcher.match(matchers, 'foo', 'extra')
+    const fooResult = matcher.match(rules, 'foo', 'extra')
 
     expect(fooResult).toEqual(
       [
@@ -46,9 +46,9 @@ describe('initxBaseMatcher', () => {
   })
 
   it('should match the matcher2', () => {
-    const matchers = [matcher1, matcher2]
+    const rules = [rule1, rule2]
 
-    const result = matcher.match(matchers, 'foobar', 'extra')
+    const result = matcher.match(rules, 'foobar', 'extra')
 
     expect(result).toEqual(
       [
@@ -63,17 +63,17 @@ describe('initxBaseMatcher', () => {
   })
 
   it('should not match if the key does not match any patterns', () => {
-    const matchers = {
-      matching: 'testKey1'
+    const rule = {
+      matching: 'testKey'
     }
 
-    const result = matcher.match(matchers, 'nonMatchingKey', 'extra1')
+    const result = matcher.match(rule, 'nonMatchingKey', 'extra')
     expect(result).toEqual([])
   })
 
   it('should correctly handle multiple arguments', () => {
-    const matchers = { matching: 'testKey' }
-    const result = matcher.match(matchers, 'testKey', 'extra1', 'extra2')
+    const rule = { matching: 'testKey' }
+    const result = matcher.match(rule, 'testKey', 'extra1', 'extra2')
     expect(result).toEqual([{ matcher: {}, others: ['extra1', 'extra2'] }])
   })
 })
