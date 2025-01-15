@@ -12,7 +12,7 @@ interface MatcherRuleSetup {
 type BaseMatcherRules<TRule> = TRule & MatcherRuleSetup
 type TypeMatcherRules<TRule> = Record<string, BaseMatcherRules<TRule>>
 
-type ResultFunction<TResult, TRule> = (matcher: TRule, ...others: string[]) => TResult
+type ResultFunction<TResult, TRule> = (rule: TRule, ...others: string[]) => TResult
 
 export type MatcherRules<TRule extends object = object> = MaybeArray<BaseMatcherRules<TRule>> | TypeMatcherRules<TRule>
 
