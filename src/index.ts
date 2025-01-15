@@ -36,7 +36,7 @@ class InitxMatcher<TResult, TRule extends object> {
 
     // TypeRules
     if (this.isObject(rules)) {
-      return this.matchTypeRules(rules as TypeMatcherRules<TRule>, key, ...others)
+      return this.matchTypeRules(rules, key, ...others)
     }
 
     return []
