@@ -23,7 +23,12 @@ interface CustomField {
   name: string
 }
 
-function resultFn(rule: CustomField, ...others: string[]) {
+interface CustomResult {
+  rule: CustomField
+  others: string[]
+}
+
+function resultFn(rule: CustomField, ...others: string[]): CustomResult {
   return { rule, others }
 }
 
@@ -44,7 +49,7 @@ const rules: MatcherRules<CustomField> = [
   }
 ]
 
-const matcher = useInitxMatcher(resultFn)
+const matcher = useInitxMatcher<CustomResult, CustomField>(resultFn)
 
 matcher.match(rules, 'foo')
 // [{ rule: { name: 'first' }, others: [] }]
@@ -62,17 +67,23 @@ matcher.match(rules, 'top', 'extra')
 ### Type matcher
 
 ```ts
+enum CustomType {
+  FOO = 'foo',
+  BAR = 'bar'
+}
+
 interface CustomField {
   title: string
 }
 
-function resultFn(rule: CustomField, type: string, ...others: string[]) {
-  return { rule, type, others }
+interface CustomResult {
+  rule: CustomField
+  type: CustomType
+  others: string[]
 }
 
-enum CustomType {
-  FOO = 'foo',
-  BAR = 'bar'
+function resultFn(rule: CustomField, type: CustomType, ...others: string[]): CustomResult {
+  return { rule, type, others }
 }
 
 const rules: MatcherRules<CustomField> = {
@@ -92,7 +103,7 @@ const rules: MatcherRules<CustomField> = {
   }
 }
 
-const matcher = useInitxMatcher(resultFn)
+const matcher = useInitxMatcher<CustomResult, CustomField>(resultFn)
 
 matcher.match(rules, 'f')
 matcher.match(rules, 'o')
