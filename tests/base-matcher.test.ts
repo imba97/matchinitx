@@ -6,11 +6,11 @@ function resultFn(rule: any, ...others: string[]) {
 }
 
 describe('initxBaseMatcher', () => {
-  const matcher = useInitxMatcher(resultFn)
-
-  type CustomMatcherRule = MatcherRules<{
+  interface CustomField {
     name: string
-  }>
+  }
+
+  type CustomMatcherRule = MatcherRules<CustomField>
 
   const rule1: CustomMatcherRule = {
     matching: 'foo',
@@ -22,8 +22,13 @@ describe('initxBaseMatcher', () => {
     name: 'barName'
   }
 
+  const matcher = useInitxMatcher<
+    { rule: CustomField, others: string[] },
+    CustomField
+  >(resultFn)
+
   it('should match matcher1 and matcher2', () => {
-    const rules: CustomMatcherRule[] = [rule1, rule2]
+    const rules = [rule1, rule2]
 
     const fooResult = matcher.match(rules, 'foo', 'extra')
 
@@ -64,7 +69,8 @@ describe('initxBaseMatcher', () => {
 
   it('should not match if the key does not match any patterns', () => {
     const rule = {
-      matching: 'testKey'
+      matching: 'testKey',
+      name: 'testName'
     }
 
     const result = matcher.match(rule, 'nonMatchingKey', 'extra')
@@ -72,8 +78,8 @@ describe('initxBaseMatcher', () => {
   })
 
   it('should correctly handle multiple arguments', () => {
-    const rule = { matching: 'testKey' }
+    const rule = { matching: 'testKey', name: 'testName' }
     const result = matcher.match(rule, 'testKey', 'extra1', 'extra2')
-    expect(result).toEqual([{ rule: {}, others: ['extra1', 'extra2'] }])
+    expect(result).toEqual([{ rule: { name: 'testName' }, others: ['extra1', 'extra2'] }])
   })
 })

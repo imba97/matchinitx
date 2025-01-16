@@ -10,7 +10,13 @@ function resultFn(rule: any, ...others: string[]) {
   return { rule, others }
 }
 
-function resultTypeFn(rule: any, type: string, ...others: string[]) {
+interface CustomResult {
+  rule: object
+  type: CustomType
+  others: string[]
+}
+
+function resultTypeFn(rule: any, type: CustomType, ...others: string[]): CustomResult {
   return { rule, type, others }
 }
 
