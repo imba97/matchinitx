@@ -12,7 +12,9 @@ interface MatcherRuleSetup {
 type BaseMatcherRules<TRule> = TRule & MatcherRuleSetup
 type TypeMatcherRules<TRule> = Record<string, BaseMatcherRules<TRule>>
 
-type ResultFunction<TResult, TRule> = (rule: TRule, ...others: string[]) => TResult
+type ResultFunction<TResult, TRule>
+  = ((rule: TRule, ...others: string[]) => TResult)
+  | ((rule: TRule, type: any, ...others: string[]) => TResult)
 
 export type MatcherRules<TRule extends object = object> = MaybeArray<BaseMatcherRules<TRule>> | TypeMatcherRules<TRule>
 
@@ -139,11 +141,11 @@ class InitxMatcher<TResult, TRule extends object> {
     return this.omit<TRule>(rules, ['matching'])
   }
 
-  private buildResultFunction(rules: BaseMatcherRules<TRule>, ...others: string[]): TResult {
+  private buildResultFunction(rules: BaseMatcherRules<TRule>, ...others: string[] | [string, ...string[]]): TResult {
     const buildedMatcher = this.buildResultMatcher(rules)
     return this.resultFunction(
       buildedMatcher,
-      ...others
+      ...others as [string, ...string[]]
     )
   }
 }
