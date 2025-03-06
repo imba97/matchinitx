@@ -12,16 +12,22 @@ interface MatcherRuleSetup {
 type BaseMatcherRules<TRule> = TRule & MatcherRuleSetup
 type TypeMatcherRules<TRule> = Record<string, BaseMatcherRules<TRule>>
 
-type ResultFunction<TResult, TRule>
-  = ((rule: TRule, ...others: string[]) => TResult)
-  | ((rule: TRule, type: any, ...others: string[]) => TResult)
+type ResultFunctionNoType<TResult, TRule> = (rule: TRule, ...others: string[]) => TResult
+type ResultFunctionHasType<TResult, TRule, TType> = (rule: TRule, type: TType, ...others: string[]) => TResult
 
-export type MatcherRules<TRule extends object = object> = MaybeArray<BaseMatcherRules<TRule>> | TypeMatcherRules<TRule>
+type ResultFunction<TResult, TRule, TType>
+  = TType extends undefined
+    ? ResultFunctionNoType<TResult, TRule>
+    : ResultFunctionHasType<TResult, TRule, TType>
 
-class InitxMatcher<TResult, TRule extends object> {
-  private resultFunction: ResultFunction<TResult, TRule>
+export type MatcherRules<TRule extends object = object>
+  = MaybeArray<BaseMatcherRules<TRule>>
+  | TypeMatcherRules<TRule>
 
-  constructor(fn: ResultFunction<TResult, TRule>) {
+class InitxMatcher<TResult, TRule extends object, TType> {
+  private resultFunction: ResultFunction<TResult, TRule, TType>
+
+  constructor(fn: ResultFunction<TResult, TRule, TType>) {
     this.resultFunction = fn
   }
 
@@ -51,7 +57,7 @@ class InitxMatcher<TResult, TRule extends object> {
     }
 
     return this.alwaysArray(
-      this.buildResultFunction(rules, ...others)
+      (this.buildResultFunction as ResultFunctionNoType<TResult, TRule>)(rules, ...others)
     )
   }
 
@@ -64,7 +70,7 @@ class InitxMatcher<TResult, TRule extends object> {
 
       if (isPassed) {
         results.push(
-          this.buildResultFunction(rule, ...others)
+          (this.buildResultFunction as ResultFunctionNoType<TResult, TRule>)(rule, ...others)
         )
       }
     }
@@ -82,7 +88,7 @@ class InitxMatcher<TResult, TRule extends object> {
 
       if (isPassed) {
         results.push(
-          this.buildResultFunction(rule, keys[i], ...others)
+          this.buildResultFunction(rule, keys[i] as TType, ...others)
         )
       }
     }
@@ -141,18 +147,21 @@ class InitxMatcher<TResult, TRule extends object> {
     return this.omit<TRule>(rules, ['matching'])
   }
 
-  private buildResultFunction(rules: BaseMatcherRules<TRule>, ...others: string[] | [string, ...string[]]): TResult {
+  private buildResultFunction(rules: BaseMatcherRules<TRule>, ...others: [TType, ...string[]]): TResult {
     const buildedMatcher = this.buildResultMatcher(rules)
-    return this.resultFunction(
+    const [type, ...rest] = others
+    return (this.resultFunction as ResultFunctionHasType<TResult, TRule, TType>)(
       buildedMatcher,
-      ...others as [string, ...string[]]
+      type,
+      ...rest
     )
   }
 }
 
 export function useInitxMatcher<
   TResult,
-  TRule extends object = object
->(fn: ResultFunction<TResult, TRule>) {
-  return new InitxMatcher<TResult, TRule>(fn)
+  TRule extends object = object,
+  TType = undefined
+>(fn: ResultFunction<TResult, TRule, TType>) {
+  return new InitxMatcher<TResult, TRule, TType>(fn)
 }

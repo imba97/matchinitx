@@ -6,17 +6,21 @@ enum CustomType {
   BAR = 'bar'
 }
 
-function resultFn(rule: any, ...others: string[]) {
-  return { rule, others }
+interface CustomField {
+  name: string
 }
 
 interface CustomResult {
-  rule: object
+  rule: CustomField
   type: CustomType
   others: string[]
 }
 
-function resultTypeFn(rule: any, type: CustomType, ...others: string[]): CustomResult {
+function resultFn(rule: CustomField, ...others: string[]) {
+  return { rule, others }
+}
+
+function resultTypeFn(rule: CustomField, type: CustomType, ...others: string[]): CustomResult {
   return { rule, type, others }
 }
 
@@ -24,27 +28,56 @@ describe('initxTypeMatcher', () => {
   it('should match with TypeMatchers', () => {
     const matcher = useInitxMatcher(resultFn)
 
-    const rules: MatcherRules = {
-      type1: { matching: 'testKey1' },
-      type2: { matching: 'testKey2' }
+    const rules: MatcherRules<CustomField> = {
+      type1: { matching: 'testKey1', name: 'name1' },
+      type2: { matching: 'testKey2', name: 'name2' }
     }
 
-    const result = matcher.match(rules, 'testKey2', 'extra2')
-    expect(result).toEqual([{ rule: {}, others: ['type2', 'extra2'] }])
+    expect(
+      matcher.match(rules, 'testKey2', 'extra2')
+    )
+      .toEqual(
+        [
+          {
+            rule: { name: 'name2' },
+            others: ['type2', 'extra2']
+          }
+        ]
+      )
   })
 
   it('use resultTypeFn', () => {
     const matcher = useInitxMatcher(resultTypeFn)
 
-    const rules: MatcherRules = {
-      [CustomType.FOO]: { matching: 'testKey1' },
-      [CustomType.BAR]: { matching: 'testKey2' }
+    const rules: MatcherRules<CustomField> = {
+      [CustomType.FOO]: { matching: 'testKey1', name: 'name1' },
+      [CustomType.BAR]: { matching: 'testKey2', name: 'name2' }
     }
 
-    const result1 = matcher.match(rules, 'testKey1', 'extra')
-    expect(result1).toEqual([{ rule: {}, type: CustomType.FOO, others: ['extra'] }])
+    expect(
+      matcher.match(rules, 'testKey1', 'extra')
+    )
+      .toEqual(
+        [
+          {
+            rule: { name: 'name1' },
+            type: CustomType.FOO,
+            others: ['extra']
+          }
+        ]
+      )
 
-    const result2 = matcher.match(rules, 'testKey2', 'extra')
-    expect(result2).toEqual([{ rule: {}, type: CustomType.BAR, others: ['extra'] }])
+    expect(
+      matcher.match(rules, 'testKey2', 'extra')
+    )
+      .toEqual(
+        [
+          {
+            rule: { name: 'name2' },
+            type: CustomType.BAR,
+            others: ['extra']
+          }
+        ]
+      )
   })
 })
